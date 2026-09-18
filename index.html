@@ -1,0 +1,2902 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+
+<title>Robot Fire</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    touch-action:none;
+    user-select:none;
+}
+
+html,body{
+    margin:0;
+    width:100%;
+    min-height:100%;
+}
+
+body{
+    background:#111;
+    color:white;
+    font-family:Arial,sans-serif;
+    text-align:center;
+    overflow-x:hidden;
+}
+
+#menu{
+    padding:12px;
+    max-width:800px;
+    margin:auto;
+}
+
+h1{
+    font-size:28px;
+    margin:10px;
+}
+
+h3{
+    margin:8px;
+}
+
+button{
+    margin:3px;
+    padding:8px 12px;
+    font-size:14px;
+    border:2px solid white;
+    border-radius:9px;
+    background:#333;
+    color:white;
+    cursor:pointer;
+}
+
+button:active{
+    transform:scale(.94);
+}
+
+button:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+}
+
+.seleccionado{
+    background:#16a34a!important;
+    border-color:#7cff9b!important;
+    box-shadow:0 0 12px #16ff55;
+}
+
+#niveles{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+
+.info{
+    max-width:700px;
+    margin:8px auto;
+    padding:9px;
+    border:2px solid #555;
+    border-radius:9px;
+    background:#1b1b1b;
+    font-size:13px;
+}
+
+.upgrade{
+    background:#164b2a;
+}
+
+.reset{
+    background:#5b2525;
+}
+
+#juego{
+    display:none;
+    width:100%;
+    max-width:1000px;
+    margin:auto;
+}
+
+canvas{
+    display:block;
+    width:100%;
+    max-width:900px;
+    height:auto;
+    margin:auto;
+    background:#202020;
+    border:3px solid white;
+}
+
+#controles{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    padding:10px;
+    max-width:760px;
+    margin:auto;
+}
+
+#movimiento{
+    width:220px;
+    height:170px;
+    position:relative;
+    margin:auto;
+}
+
+#movimiento button{
+    position:absolute;
+    width:55px;
+    height:48px;
+    padding:0;
+    font-size:21px;
+    margin:0;
+}
+
+#arriba{
+    top:0;
+    left:82px;
+}
+
+#abajo{
+    bottom:0;
+    left:82px;
+}
+
+#izquierda{
+    left:0;
+    top:61px;
+}
+
+#derecha{
+    right:0;
+    top:61px;
+}
+
+#armas{
+    width:100%;
+    max-width:350px;
+    margin:auto;
+}
+
+#armas button{
+    min-width:75px;
+    min-height:45px;
+    font-size:11px;
+    padding:6px;
+}
+
+#disparo{
+    width:160px!important;
+    height:50px;
+    background:#900;
+    font-size:18px!important;
+}
+
+#escudo{
+    width:160px;
+    height:50px;
+    background:#075985;
+    font-size:17px;
+}
+
+#escudo.activo{
+    background:#00aaff;
+    box-shadow:0 0 25px #00ffff;
+}
+
+#abajoControles{
+    grid-column:1 / 3;
+    width:100%;
+    margin:auto;
+}
+
+#botonGiro{
+    width:170px;
+    height:48px;
+    background:#174b70;
+    font-size:14px;
+}
+
+#menuJuego{
+    background:#444;
+}
+
+#pantallaFinal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.90);
+    z-index:20;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+#panelFinal{
+    width:90%;
+    max-width:450px;
+    background:#202020;
+    border:3px solid white;
+    border-radius:15px;
+    padding:25px;
+    box-shadow:0 0 30px #00ff88;
+}
+
+#panelFinal h2{
+    font-size:28px;
+    margin:5px;
+}
+
+#panelFinal p{
+    font-size:17px;
+}
+
+#btnProximo{
+    background:#168cff;
+    font-size:17px;
+    padding:12px 22px;
+}
+
+#btnMenuFinal{
+    background:#444;
+    font-size:17px;
+    padding:12px 22px;
+}
+
+@media(max-width:600px){
+
+    h1{
+        font-size:23px;
+    }
+
+    #controles{
+        grid-template-columns:45% 55%;
+        gap:4px;
+        padding:6px;
+    }
+
+    #movimiento{
+        width:180px;
+        height:150px;
+    }
+
+    #movimiento button{
+        width:50px;
+        height:44px;
+        font-size:19px;
+    }
+
+    #arriba,
+    #abajo{
+        left:65px;
+    }
+
+    #armas button{
+        min-width:62px;
+        font-size:9px;
+    }
+
+    #disparo{
+        width:145px!important;
+    }
+
+    #escudo{
+        width:145px;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="menu">
+
+<h1>🔥 ROBOT FIRE 🤖</h1>
+
+<h3>🎨 COLOR</h3>
+
+<button id="colorAzul"
+onclick="elegirColor('#168cff','colorAzul')">🔵</button>
+
+<button id="colorRojo"
+onclick="elegirColor('#ff3030','colorRojo')">🔴</button>
+
+<button id="colorVerde"
+onclick="elegirColor('#39d353','colorVerde')">🟢</button>
+
+<button id="colorAmarillo"
+onclick="elegirColor('#ffe600','colorAmarillo')">🟡</button>
+
+<button id="colorMorado"
+onclick="elegirColor('#b66cff','colorMorado')">🟣</button>
+
+<h3>🎮 NIVELES</h3>
+
+<div id="niveles"></div>
+
+<div class="info">
+
+<b>🔧 MEJORAS</b>
+
+<br>
+
+<span id="mejoras"></span>
+
+<br>
+
+<button class="upgrade"
+onclick="mejorarArma()">
+⚔️ ARMAS
+</button>
+
+<button class="upgrade"
+onclick="mejorarMunicion()">
+📦 MUNICIÓN
+</button>
+
+<br>
+
+<button class="reset"
+onclick="reiniciarMejoras()">
+♻️ REINICIAR
+</button>
+
+</div>
+
+<button onclick="iniciarNivel(nivelSeleccionado)">
+▶️ JUGAR
+</button>
+
+</div>
+
+
+<div id="juego">
+
+<canvas id="canvas"
+width="900"
+height="550">
+</canvas>
+
+<div id="controles">
+
+<div id="movimiento">
+
+<button
+id="arriba"
+onpointerdown="presionar('up',event)"
+onpointerup="soltar('up',event)"
+onpointercancel="soltar('up',event)">
+⬆️
+</button>
+
+<button
+id="izquierda"
+onpointerdown="presionar('left',event)"
+onpointerup="soltar('left',event)"
+onpointercancel="soltar('left',event)">
+⬅️
+</button>
+
+<button
+id="derecha"
+onpointerdown="presionar('right',event)"
+onpointerup="soltar('right',event)"
+onpointercancel="soltar('right',event)">
+➡️
+</button>
+
+<button
+id="abajo"
+onpointerdown="presionar('down',event)"
+onpointerup="soltar('down',event)"
+onpointercancel="soltar('down',event)">
+⬇️
+</button>
+
+</div>
+
+<div id="armas">
+
+<button id="arma0"
+onclick="seleccionarArma(0)">
+🔫 Pistola
+<br>
+<small id="p0"></small>
+</button>
+
+<button id="arma1"
+onclick="seleccionarArma(1)">
+⚡ Láser
+<br>
+<small id="p1"></small>
+</button>
+
+<button id="arma2"
+onclick="seleccionarArma(2)">
+🔥 Fuego
+<br>
+<small id="p2"></small>
+</button>
+
+<button id="arma3"
+onclick="seleccionarArma(3)">
+🔷 Rayo
+<br>
+<small id="p3"></small>
+</button>
+
+<br>
+
+<button
+id="disparo"
+onpointerdown="
+registrarCodigo('fire');
+disparar();
+">
+💥 DISPARAR
+</button>
+
+<br>
+
+<button
+id="escudo"
+onclick="activarEscudo()">
+🛡️ ESCUDO
+</button>
+
+<br>
+
+<small id="textoEscudo">
+Escudo listo
+</small>
+
+</div>
+
+<div id="abajoControles">
+
+<button
+id="botonGiro"
+onclick="girarDireccion()">
+🔄 GIRAR
+</button>
+
+<br>
+
+<small>
+Dirección:
+<span id="direccionTexto">ENFRENTE</span>
+</small>
+
+<br>
+
+<button
+id="menuJuego"
+onclick="volverMenu()">
+🏠 MENÚ
+</button>
+
+</div>
+
+</div>
+</div>
+
+
+<div id="pantallaFinal">
+
+<div id="panelFinal">
+
+<h2 id="tituloFinal">
+🏆 NIVEL COMPLETADO
+</h2>
+
+<p id="textoFinal"></p>
+
+<button
+id="btnProximo"
+onclick="siguienteNivel()">
+▶️ PRÓXIMO NIVEL
+</button>
+
+<br><br>
+
+<button
+id="btnMenuFinal"
+onclick="volverMenu()">
+🏠 MENÚ
+</button>
+
+</div>
+
+</div>
+
+
+<script>
+
+const canvas=
+document.getElementById("canvas");
+
+const ctx=
+canvas.getContext("2d");
+
+let jugador=null;
+let enemigos=[];
+let balas=[];
+let objetos=[];
+let rayos=[];
+
+let nivel=1;
+let nivelSeleccionado=1;
+let jugando=false;
+let raf=0;
+
+let arma=0;
+let direccion=0;
+let angulo=0;
+
+let colorJugador="#168cff";
+
+let partes=
+Number(localStorage.getItem("rfPartes")||0);
+
+let mejoraArma=
+Number(localStorage.getItem("rfMejoraArma")||0);
+
+let mejoraMunicion=
+Number(localStorage.getItem("rfMejoraMunicion")||0);
+
+let laserDesbloqueado=
+localStorage.getItem("rfLaser")==="1";
+
+let codigo=[];
+let armaSecreta=false;
+let parpadeoJugador=0;
+
+
+/* =========================
+   ESCUDO
+========================= */
+
+let escudoActivo=false;
+let escudoDisponible=true;
+let tiempoEscudo=0;
+let tiempoRecarga=0;
+
+const DURACION_ESCUDO=600;
+const RECARGA_ESCUDO=900;
+
+
+/* =========================
+   MOVIMIENTO
+========================= */
+
+let teclasMovimiento={
+    up:false,
+    down:false,
+    left:false,
+    right:false
+};
+
+const ACELERACION=.75;
+const VELOCIDAD_MAXIMA=6;
+const FRICCION=.82;
+
+
+/* =========================
+   ARMAS
+========================= */
+
+const armasBase=[
+
+{
+    nombre:"Pistola",
+    daño:10,
+    velocidad:13,
+    tam:5,
+    max:50
+},
+
+{
+    nombre:"Láser",
+    daño:20,
+    velocidad:19,
+    tam:5,
+    max:35
+},
+
+{
+    nombre:"Fuego",
+    daño:30,
+    velocidad:11,
+    tam:9,
+    max:30
+},
+
+{
+    nombre:"Rayo Láser",
+    daño:50,
+    velocidad:25,
+    tam:7,
+    max:20
+}
+
+];
+
+let armas=[];
+
+
+/* =========================
+   ENEMIGOS
+========================= */
+
+const tipos=[
+
+{
+    color:"#ff3030",
+    vida:30,
+    velocidad:1.4,
+    tam:17,
+    daño:.45
+},
+
+{
+    color:"#ff8a00",
+    vida:45,
+    velocidad:1.8,
+    tam:19,
+    daño:.55
+},
+
+{
+    color:"#00d5b5",
+    vida:25,
+    velocidad:2.4,
+    tam:16,
+    daño:.7
+},
+
+{
+    color:"#b8c0cc",
+    vida:70,
+    velocidad:1.1,
+    tam:22,
+    daño:.8
+},
+
+{
+    color:"#ffd400",
+    vida:12,
+    velocidad:3.8,
+    tam:10,
+    daño:.3
+}
+
+];
+
+
+/* =========================
+   ARMAS
+========================= */
+
+function actualizarArmas(){
+
+    armas=armasBase.map(a=>({
+
+        ...a,
+
+        daño:a.daño+
+        mejoraArma*4,
+
+        max:a.max+
+        mejoraMunicion*6
+
+    }));
+
+    document.getElementById("p0").textContent=
+        armas[0].daño+" daño";
+
+    document.getElementById("p1").textContent=
+        armas[1].daño+" daño";
+
+    document.getElementById("p2").textContent=
+        armas[2].daño+" daño";
+
+    document.getElementById("p3").textContent=
+        laserDesbloqueado
+        ? armas[3].daño+" daño"
+        : "🔒 Nivel 3";
+
+    document.getElementById("mejoras").textContent=
+        "🧩 Piezas: "+partes+
+        " | ⚔️ +"+mejoraArma+
+        " | 📦 +"+mejoraMunicion;
+
+    actualizarSeleccionArma();
+}
+
+
+/* =========================
+   COLOR
+========================= */
+
+function elegirColor(c,id){
+
+    colorJugador=c;
+
+    document.querySelectorAll(
+        "#menu button"
+    ).forEach(b=>{
+
+        if(b.id.startsWith("color")){
+
+            b.classList.remove(
+                "seleccionado"
+            );
+        }
+
+    });
+
+    document.getElementById(id)
+        .classList.add("seleccionado");
+}
+
+
+/* =========================
+   GUARDAR
+========================= */
+
+function guardar(){
+
+    localStorage.setItem(
+        "rfPartes",
+        partes
+    );
+
+    localStorage.setItem(
+        "rfMejoraArma",
+        mejoraArma
+    );
+
+    localStorage.setItem(
+        "rfMejoraMunicion",
+        mejoraMunicion
+    );
+
+    actualizarArmas();
+}
+
+
+/* =========================
+   MEJORAS
+========================= */
+
+function mejorarArma(){
+
+    let costo=
+        (mejoraArma+1)*5;
+
+    if(partes<costo){
+
+        alert(
+            "Necesitas "+costo+" piezas."
+        );
+
+        return;
+    }
+
+    partes-=costo;
+    mejoraArma++;
+
+    guardar();
+}
+
+
+function mejorarMunicion(){
+
+    let costo=
+        (mejoraMunicion+1)*4;
+
+    if(partes<costo){
+
+        alert(
+            "Necesitas "+costo+" piezas."
+        );
+
+        return;
+    }
+
+    partes-=costo;
+    mejoraMunicion++;
+
+    guardar();
+}
+
+
+function reiniciarMejoras(){
+
+    if(confirm(
+        "¿Reiniciar las mejoras?"
+    )){
+
+        partes=0;
+        mejoraArma=0;
+        mejoraMunicion=0;
+
+        guardar();
+    }
+}
+
+
+/* =========================
+   NIVELES
+========================= */
+
+function cargarNiveles(){
+
+    let desbloqueado=
+        Number(
+            localStorage.getItem(
+                "robotFireDesbloqueado"
+            )||1
+        );
+
+    const div=
+        document.getElementById("niveles");
+
+    div.innerHTML="";
+
+    for(let i=1;i<=10;i++){
+
+        let b=
+            document.createElement("button");
+
+        if(i===5)
+            b.textContent="👹 Nivel 5";
+
+        else if(i===10)
+            b.textContent="👑 Nivel 10";
+
+        else
+            b.textContent="Nivel "+i;
+
+        if(i>desbloqueado)
+            b.textContent+=" 🔒";
+
+        b.disabled=
+            i>desbloqueado;
+
+        b.onclick=()=>{
+
+            nivelSeleccionado=i;
+
+            document.querySelectorAll(
+                "#niveles button"
+            ).forEach(x=>{
+                x.classList.remove(
+                    "seleccionado"
+                );
+            });
+
+            b.classList.add(
+                "seleccionado"
+            );
+        };
+
+        if(
+            i===nivelSeleccionado &&
+            i<=desbloqueado
+        ){
+
+            b.classList.add(
+                "seleccionado"
+            );
+        }
+
+        div.appendChild(b);
+    }
+
+    actualizarArmas();
+}
+
+
+/* =========================
+   CREAR ENEMIGO
+========================= */
+
+function crearEnemigo(i){
+
+    let tipo=
+        i%
+        Math.min(
+            5,
+            Math.max(2,nivel)
+        );
+
+    let t=tipos[tipo];
+
+    let multiplicador=
+        1+(nivel-1)*.22;
+
+    enemigos.push({
+
+        x:
+            500+
+            Math.random()*350,
+
+        y:
+            60+
+            Math.random()*430,
+
+        vida:
+            Math.round(
+                t.vida*multiplicador
+            ),
+
+        maxVida:
+            Math.round(
+                t.vida*multiplicador
+            ),
+
+        tam:t.tam,
+
+        velocidad:
+            t.velocidad+
+            nivel*.12,
+
+        daño:
+            t.daño+
+            nivel*.05,
+
+        tipo:tipo,
+
+        golpe:0
+    });
+}
+
+
+/* =========================
+   INICIAR NIVEL
+========================= */
+
+function iniciarNivel(n){
+
+    if(n<1||n>10)
+        return;
+
+    let desbloqueado=
+        Number(
+            localStorage.getItem(
+                "robotFireDesbloqueado"
+            )||1
+        );
+
+    if(n>desbloqueado){
+
+        alert(
+            "🔒 Completa el nivel anterior."
+        );
+
+        return;
+    }
+
+    nivel=n;
+
+    document.getElementById(
+        "pantallaFinal"
+    ).style.display="none";
+
+    document.getElementById(
+        "menu"
+    ).style.display="none";
+
+    document.getElementById(
+        "juego"
+    ).style.display="block";
+
+    jugador={
+
+        x:150,
+        y:275,
+
+        vida:
+            250+
+            (nivel-1)*15,
+
+        maxVida:
+            250+
+            (nivel-1)*15,
+
+        municion:
+            armas.map(a=>a.max),
+
+        velocidadX:0,
+        velocidadY:0
+    };
+
+    parpadeoJugador=0;
+
+    escudoActivo=false;
+    escudoDisponible=true;
+    tiempoEscudo=0;
+    tiempoRecarga=0;
+
+    actualizarEscudo();
+
+    teclasMovimiento={
+        up:false,
+        down:false,
+        left:false,
+        right:false
+    };
+
+    enemigos=[];
+    balas=[];
+    objetos=[];
+    rayos=[];
+
+    arma=0;
+    direccion=0;
+    angulo=0;
+
+    codigo=[];
+    armaSecreta=false;
+
+    actualizarDireccionTexto();
+    actualizarSeleccionArma();
+
+
+    /* =========================
+       JEFE NIVEL 5
+    ========================= */
+
+    if(nivel===5){
+
+        enemigos.push({
+
+            x:720,
+            y:275,
+
+            vida:1500,
+            maxVida:1500,
+
+            tam:48,
+            velocidad:1.25,
+            daño:1.4,
+
+            jefe:true,
+            tipoJefe:1,
+            tiempo:0,
+            rayo:false,
+            objetivo:275,
+            golpe:0
+        });
+
+        for(let i=0;i<16;i++)
+            crearPequeno();
+
+    }
+
+
+    /* =========================
+       JEFE NIVEL 10
+    ========================= */
+
+    else if(nivel===10){
+
+        enemigos.push({
+
+            x:720,
+            y:275,
+
+            vida:4000,
+            maxVida:4000,
+
+            tam:58,
+            velocidad:1.55,
+            daño:2,
+
+            jefe:true,
+            tipoJefe:2,
+            tiempo:0,
+            rayo:false,
+            objetivo:275,
+            golpe:0,
+            ataqueRayo:0
+        });
+
+        for(let i=0;i<22;i++)
+            crearPequeno();
+
+    }
+
+
+    /* =========================
+       NIVELES NORMALES
+       MÁS ENEMIGOS
+    ========================= */
+
+    else{
+
+        let cantidad=
+            9+
+            nivel*5;
+
+        for(
+            let i=0;
+            i<cantidad;
+            i++
+        ){
+
+            crearEnemigo(i);
+        }
+
+        for(
+            let i=0;
+            i<nivel+5;
+            i++
+        ){
+
+            crearPequeno();
+        }
+    }
+
+    jugando=true;
+
+    cancelAnimationFrame(raf);
+
+    juego();
+}
+
+
+/* =========================
+   ENEMIGO PEQUEÑO
+========================= */
+
+function crearPequeno(){
+
+    let vida=
+        15+
+        nivel*3;
+
+    enemigos.push({
+
+        x:
+            500+
+            Math.random()*350,
+
+        y:
+            60+
+            Math.random()*430,
+
+        vida:vida,
+        maxVida:vida,
+
+        tam:9,
+
+        velocidad:
+            3.8+
+            nivel*.12,
+
+        daño:
+            .3+
+            nivel*.03,
+
+        tipo:4,
+
+        golpe:0
+    });
+}
+
+
+/* =========================
+   MOVIMIENTO
+========================= */
+
+function presionar(d,event){
+
+    if(!jugando)
+        return;
+
+    if(event){
+
+        event.preventDefault();
+
+        if(event.pointerId){
+
+            try{
+
+                event.currentTarget
+                .setPointerCapture(
+                    event.pointerId
+                );
+
+            }catch(error){}
+        }
+    }
+
+    if(!teclasMovimiento[d])
+        registrarCodigo(d);
+
+    teclasMovimiento[d]=true;
+}
+
+
+function soltar(d,event){
+
+    if(event)
+        event.preventDefault();
+
+    teclasMovimiento[d]=false;
+}
+
+document.addEventListener(
+    "pointerup",
+    ()=>{
+
+        teclasMovimiento.up=false;
+        teclasMovimiento.down=false;
+        teclasMovimiento.left=false;
+        teclasMovimiento.right=false;
+    }
+);
+
+
+/* =========================
+   MOVIMIENTO FLUIDO
+========================= */
+
+function actualizarMovimiento(){
+
+    if(!jugador)
+        return;
+
+    if(teclasMovimiento.up)
+        jugador.velocidadY-=ACELERACION;
+
+    if(teclasMovimiento.down)
+        jugador.velocidadY+=ACELERACION;
+
+    if(teclasMovimiento.left)
+        jugador.velocidadX-=ACELERACION;
+
+    if(teclasMovimiento.right)
+        jugador.velocidadX+=ACELERACION;
+
+    jugador.velocidadX=
+        Math.max(
+            -VELOCIDAD_MAXIMA,
+            Math.min(
+                VELOCIDAD_MAXIMA,
+                jugador.velocidadX
+            )
+        );
+
+    jugador.velocidadY=
+        Math.max(
+            -VELOCIDAD_MAXIMA,
+            Math.min(
+                VELOCIDAD_MAXIMA,
+                jugador.velocidadY
+            )
+        );
+
+    jugador.x+=jugador.velocidadX;
+    jugador.y+=jugador.velocidadY;
+
+    if(
+        !teclasMovimiento.left &&
+        !teclasMovimiento.right
+    )
+        jugador.velocidadX*=FRICCION;
+
+    if(
+        !teclasMovimiento.up &&
+        !teclasMovimiento.down
+    )
+        jugador.velocidadY*=FRICCION;
+
+    if(Math.abs(jugador.velocidadX)<.05)
+        jugador.velocidadX=0;
+
+    if(Math.abs(jugador.velocidadY)<.05)
+        jugador.velocidadY=0;
+
+    jugador.x=
+        Math.max(
+            25,
+            Math.min(
+                canvas.width-25,
+                jugador.x
+            )
+        );
+
+    jugador.y=
+        Math.max(
+            35,
+            Math.min(
+                canvas.height-25,
+                jugador.y
+            )
+        );
+}
+
+
+/* =========================
+   GIRAR
+========================= */
+
+function girarDireccion(){
+
+    direccion++;
+
+    if(direccion>3)
+        direccion=0;
+
+    if(direccion===0)
+        angulo=0;
+
+    if(direccion===1)
+        angulo=Math.PI/2;
+
+    if(direccion===2)
+        angulo=Math.PI;
+
+    if(direccion===3)
+        angulo=-Math.PI/2;
+
+    actualizarDireccionTexto();
+}
+
+
+function actualizarDireccionTexto(){
+
+    let texto="";
+
+    if(direccion===0)
+        texto="ENFRENTE";
+
+    if(direccion===1)
+        texto="ABAJO";
+
+    if(direccion===2)
+        texto="ATRÁS";
+
+    if(direccion===3)
+        texto="ARRIBA";
+
+    document.getElementById(
+        "direccionTexto"
+    ).textContent=texto;
+}
+
+
+/* =========================
+   ESCUDO
+========================= */
+
+function activarEscudo(){
+
+    if(!jugando)
+        return;
+
+    if(!escudoDisponible){
+
+        return;
+    }
+
+    escudoActivo=true;
+    escudoDisponible=false;
+
+    tiempoEscudo=DURACION_ESCUDO;
+
+    document.getElementById(
+        "escudo"
+    ).classList.add("activo");
+
+    actualizarEscudo();
+}
+
+
+function actualizarEscudo(){
+
+    const boton=
+        document.getElementById("escudo");
+
+    const texto=
+        document.getElementById("textoEscudo");
+
+    if(!boton||!texto)
+        return;
+
+    if(escudoActivo){
+
+        let segundos=
+            Math.ceil(
+                tiempoEscudo/60
+            );
+
+        boton.textContent=
+            "🛡️ ESCUDO "+segundos+"s";
+
+        texto.textContent=
+            "🛡️ PROTEGIDO";
+
+        boton.classList.add("activo");
+
+        return;
+    }
+
+    if(!escudoDisponible){
+
+        let segundos=
+            Math.ceil(
+                tiempoRecarga/60
+            );
+
+        boton.textContent=
+            "🔄 RECARGANDO";
+
+        texto.textContent=
+            "Recarga: "+segundos+"s";
+
+        boton.classList.remove("activo");
+
+        return;
+    }
+
+    boton.textContent=
+        "🛡️ ESCUDO";
+
+    texto.textContent=
+        "Escudo listo";
+
+    boton.classList.remove("activo");
+}
+
+
+function actualizarTemporizadorEscudo(){
+
+    if(escudoActivo){
+
+        tiempoEscudo--;
+
+        if(tiempoEscudo<=0){
+
+            tiempoEscudo=0;
+
+            escudoActivo=false;
+
+            tiempoRecarga=
+                RECARGA_ESCUDO;
+        }
+    }
+
+    else if(!escudoDisponible){
+
+        tiempoRecarga--;
+
+        if(tiempoRecarga<=0){
+
+            tiempoRecarga=0;
+
+            escudoDisponible=true;
+        }
+    }
+
+    actualizarEscudo();
+}
+
+
+/* =========================
+   JUGADOR
+========================= */
+
+function dibujarJugador(){
+
+    if(!jugador)
+        return;
+
+    ctx.save();
+
+    ctx.translate(
+        jugador.x,
+        jugador.y
+    );
+
+    ctx.rotate(angulo);
+
+    if(escudoActivo){
+
+        ctx.beginPath();
+
+        ctx.arc(
+            0,
+            0,
+            38,
+            0,
+            Math.PI*2
+        );
+
+        ctx.strokeStyle="#00ffff";
+        ctx.lineWidth=5;
+        ctx.shadowBlur=20;
+        ctx.shadowColor="#00ffff";
+
+        ctx.stroke();
+
+        ctx.shadowBlur=0;
+    }
+
+    if(parpadeoJugador>0){
+
+        ctx.shadowBlur=25;
+        ctx.shadowColor="red";
+        ctx.fillStyle="#ff0000";
+
+    }else{
+
+        ctx.fillStyle=colorJugador;
+    }
+
+    ctx.fillRect(
+        -15,
+        -15,
+        30,
+        30
+    );
+
+    ctx.shadowBlur=0;
+
+    ctx.fillStyle="#ddd";
+
+    ctx.fillRect(
+        -13,
+        -30,
+        26,
+        17
+    );
+
+    ctx.fillStyle="#111";
+
+    ctx.fillRect(
+        -8,
+        -25,
+        4,
+        4
+    );
+
+    ctx.fillRect(
+        4,
+        -25,
+        4,
+        4
+    );
+
+    ctx.fillStyle="#555";
+
+    ctx.fillRect(
+        14,
+        -3,
+        25,
+        6
+    );
+
+    ctx.restore();
+}
+
+
+/* =========================
+   ENEMIGOS
+========================= */
+
+function dibujarEnemigos(){
+
+    for(let e of enemigos){
+
+        if(e.jefe){
+
+            dibujarJefe(e);
+
+            continue;
+        }
+
+        let t=tipos[e.tipo];
+
+        if(e.golpe>0){
+
+            ctx.fillStyle="#ff0000";
+
+            ctx.shadowBlur=20;
+            ctx.shadowColor="red";
+
+        }else{
+
+            ctx.fillStyle=t.color;
+            ctx.shadowBlur=0;
+        }
+
+        ctx.fillRect(
+            e.x-e.tam,
+            e.y-e.tam,
+            e.tam*2,
+            e.tam*2
+        );
+
+        ctx.shadowBlur=0;
+
+        ctx.fillStyle="#222";
+
+        ctx.fillRect(
+            e.x-5,
+            e.y-4,
+            3,
+            3
+        );
+
+        ctx.fillRect(
+            e.x+2,
+            e.y-4,
+            3,
+            3
+        );
+
+        ctx.fillStyle="red";
+
+        ctx.fillRect(
+            e.x-e.tam,
+            e.y-e.tam*1.6,
+            e.tam*2,
+            4
+        );
+
+        ctx.fillStyle="#00ff00";
+
+        ctx.fillRect(
+            e.x-e.tam,
+            e.y-e.tam*1.6,
+            e.tam*2*
+            Math.max(
+                0,
+                e.vida/e.maxVida
+            ),
+            4
+        );
+    }
+}
+
+
+/* =========================
+   JEFE
+========================= */
+
+function dibujarJefe(e){
+
+    ctx.save();
+
+    ctx.fillStyle=
+        e.tipoJefe===2
+        ? "#7b21ff"
+        : "#8c35ff";
+
+    if(e.golpe>0){
+
+        ctx.fillStyle="#ff0000";
+
+        ctx.shadowBlur=30;
+        ctx.shadowColor="red";
+    }
+
+    ctx.beginPath();
+
+    ctx.arc(
+        e.x,
+        e.y,
+        e.tam,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.shadowBlur=0;
+
+    ctx.fillStyle="#aaa";
+
+    ctx.fillRect(
+        e.x-38,
+        e.y-58,
+        76,
+        30
+    );
+
+    ctx.fillStyle="#ff2020";
+
+    ctx.fillRect(
+        e.x-22,
+        e.y-48,
+        10,
+        8
+    );
+
+    ctx.fillRect(
+        e.x+12,
+        e.y-48,
+        10,
+        8
+    );
+
+    if(e.tipoJefe===2){
+
+        ctx.fillStyle="#00ffff";
+
+        ctx.fillRect(
+            e.x-4,
+            e.y-e.tam-22,
+            8,
+            22
+        );
+
+        ctx.beginPath();
+
+        ctx.arc(
+            e.x,
+            e.y-e.tam-25,
+            7,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    }
+
+    ctx.fillStyle="red";
+
+    ctx.fillRect(
+        e.x-100,
+        e.y-88,
+        200,
+        14
+    );
+
+    ctx.fillStyle="#00ff00";
+
+    ctx.fillRect(
+        e.x-100,
+        e.y-88,
+        200*
+        Math.max(
+            0,
+            e.vida/e.maxVida
+        ),
+        14
+    );
+
+    ctx.fillStyle="white";
+
+    ctx.font="15px Arial";
+
+    ctx.fillText(
+        e.tipoJefe===2
+        ? "👑 JEFE FINAL"
+        : "👹 JEFE",
+        e.x-55,
+        e.y+e.tam+28
+    );
+
+    ctx.restore();
+}
+
+
+/* =========================
+   RAYOS
+========================= */
+
+function actualizarRayos(){
+
+    for(
+        let i=rayos.length-1;
+        i>=0;
+        i--
+    ){
+
+        let r=rayos[i];
+
+        r.tiempo--;
+
+        if(r.tiempo<=0){
+
+            rayos.splice(i,1);
+
+            continue;
+        }
+
+        if(
+            !escudoActivo &&
+            Math.abs(
+                jugador.x-r.x
+            )<18
+        ){
+
+            jugador.vida-=r.daño;
+
+            parpadeoJugador=6;
+        }
+    }
+}
+
+
+function dibujarRayos(){
+
+    for(let r of rayos){
+
+        ctx.save();
+
+        ctx.globalAlpha=.25;
+
+        ctx.strokeStyle="#ffff00";
+        ctx.lineWidth=22;
+
+        ctx.beginPath();
+
+        ctx.moveTo(r.x,0);
+        ctx.lineTo(r.x,canvas.height);
+
+        ctx.stroke();
+
+        ctx.globalAlpha=1;
+
+        ctx.strokeStyle="#ffff66";
+        ctx.lineWidth=6;
+
+        ctx.beginPath();
+
+        ctx.moveTo(r.x,0);
+        ctx.lineTo(r.x,canvas.height);
+
+        ctx.stroke();
+
+        ctx.restore();
+    }
+}
+
+
+/* =========================
+   OBJETOS
+========================= */
+
+function soltarObjeto(x,y){
+
+    objetos.push({
+
+        x:x,
+        y:y,
+        tipo:"ammo",
+        tiempo:1200
+    });
+
+    if(Math.random()<.35){
+
+        objetos.push({
+
+            x:x+12,
+            y:y+12,
+            tipo:"partes",
+            tiempo:1200
+        });
+    }
+}
+
+
+function dibujarObjetos(){
+
+    for(let o of objetos){
+
+        ctx.fillStyle=
+            o.tipo==="ammo"
+            ? "#00ffff"
+            : "#ffd400";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            o.x,
+            o.y,
+            9,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        ctx.fillStyle="#111";
+
+        ctx.font="9px Arial";
+
+        ctx.fillText(
+            o.tipo==="ammo"
+            ? "AM"
+            : "+",
+            o.x-6,
+            o.y+3
+        );
+    }
+}
+
+
+function recogerObjetos(){
+
+    for(
+        let i=objetos.length-1;
+        i>=0;
+        i--
+    ){
+
+        let o=objetos[i];
+
+        o.tiempo--;
+
+        if(
+            Math.hypot(
+                jugador.x-o.x,
+                jugador.y-o.y
+            )<28
+        ){
+
+            if(o.tipo==="ammo"){
+
+                for(
+                    let j=0;
+                    j<armas.length;
+                    j++
+                ){
+
+                    jugador.municion[j]=
+                        Math.min(
+                            armas[j].max,
+                            jugador.municion[j]+
+                            Math.ceil(
+                                armas[j].max*.6
+                            )
+                        );
+                }
+
+            }else{
+
+                partes++;
+
+                guardar();
+            }
+
+            objetos.splice(i,1);
+
+        }else if(o.tiempo<=0){
+
+            objetos.splice(i,1);
+        }
+    }
+}
+
+
+/* =========================
+   MOVER ENEMIGOS
+========================= */
+
+function moverEnemigos(){
+
+    for(let e of enemigos){
+
+        if(e.golpe>0)
+            e.golpe--;
+
+        let dx=
+            jugador.x-e.x;
+
+        let dy=
+            jugador.y-e.y;
+
+        let d=
+            Math.hypot(
+                dx,
+                dy
+            );
+
+        if(e.jefe){
+
+            if(d>150){
+
+                e.x+=
+                    dx/d*
+                    e.velocidad;
+
+                e.y+=
+                    dy/d*
+                    e.velocidad;
+            }
+
+            e.tiempo++;
+
+            if(e.tipoJefe===1){
+
+                if(e.tiempo%100===0)
+                    crearPequeno();
+
+                if(e.tiempo%240===0){
+
+                    e.objetivo=
+                        jugador.y;
+
+                    rayos.push({
+
+                        x:jugador.x,
+                        tiempo:45,
+                        daño:.8
+                    });
+                }
+            }
+
+            if(e.tipoJefe===2){
+
+                if(e.tiempo%70===0)
+                    crearPequeno();
+
+                if(e.tiempo%110===0){
+
+                    rayos.push({
+
+                        x:jugador.x,
+                        tiempo:55,
+                        daño:1.2
+                    });
+                }
+
+                if(e.tiempo%180===0){
+
+                    rayos.push({
+
+                        x:
+                            100+
+                            Math.random()*700,
+
+                        tiempo:40,
+                        daño:1.5
+                    });
+                }
+            }
+
+        }else{
+
+            if(d>45){
+
+                e.x+=
+                    dx/d*
+                    e.velocidad;
+
+                e.y+=
+                    dy/d*
+                    e.velocidad;
+            }
+
+            if(
+                d<
+                e.tam+20
+            ){
+
+                if(!escudoActivo){
+
+                    jugador.vida-=e.daño;
+
+                    parpadeoJugador=8;
+                }
+            }
+        }
+    }
+
+    actualizarRayos();
+
+    if(parpadeoJugador>0)
+        parpadeoJugador--;
+}
+
+
+/* =========================
+   BALAS
+========================= */
+
+function moverBalas(){
+
+    for(
+        let i=balas.length-1;
+        i>=0;
+        i--
+    ){
+
+        let b=balas[i];
+
+        b.x+=
+            Math.cos(b.angulo)*
+            b.velocidad;
+
+        b.y+=
+            Math.sin(b.angulo)*
+            b.velocidad;
+
+        let borrar=
+            b.x<0||
+            b.x>900||
+            b.y<0||
+            b.y>550;
+
+        for(
+            let j=enemigos.length-1;
+            j>=0&&!borrar;
+            j--
+        ){
+
+            let e=enemigos[j];
+
+            if(
+                Math.hypot(
+                    b.x-e.x,
+                    b.y-e.y
+                )<
+                e.tam+b.tam
+            ){
+
+                e.vida-=b.daño;
+                e.golpe=10;
+
+                borrar=true;
+
+                if(e.vida<=0){
+
+                    if(!e.jefe){
+
+                        soltarObjeto(
+                            e.x,
+                            e.y
+                        );
+                    }
+
+                    enemigos.splice(j,1);
+                }
+            }
+        }
+
+        if(borrar)
+            balas.splice(i,1);
+    }
+}
+
+
+/* =========================
+   DIBUJAR BALAS
+========================= */
+
+function dibujarBalas(){
+
+    for(let b of balas){
+
+        if(b.secreta){
+
+            ctx.save();
+
+            ctx.shadowBlur=30;
+            ctx.shadowColor="white";
+            ctx.fillStyle="white";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                b.x,
+                b.y,
+                22,
+                0,
+                Math.PI*2
+            );
+
+            ctx.fill();
+
+            ctx.strokeStyle="#00ffff";
+            ctx.lineWidth=10;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                b.x-
+                Math.cos(b.angulo)*40,
+
+                b.y-
+                Math.sin(b.angulo)*40
+            );
+
+            ctx.lineTo(
+                b.x+
+                Math.cos(b.angulo)*40,
+
+                b.y+
+                Math.sin(b.angulo)*40
+            );
+
+            ctx.stroke();
+
+            ctx.restore();
+
+        }else{
+
+            ctx.fillStyle=b.color;
+
+            ctx.beginPath();
+
+            ctx.arc(
+                b.x,
+                b.y,
+                b.tam,
+                0,
+                Math.PI*2
+            );
+
+            ctx.fill();
+        }
+    }
+}
+
+
+/* =========================
+   DISPARAR
+========================= */
+
+function disparar(){
+
+    if(!jugando)
+        return;
+
+    if(armaSecreta){
+
+        balas.push({
+
+            x:
+                jugador.x+
+                Math.cos(angulo)*40,
+
+            y:
+                jugador.y+
+                Math.sin(angulo)*40,
+
+            angulo:angulo,
+
+            velocidad:35,
+            daño:999999,
+            tam:22,
+            color:"#fff",
+            secreta:true
+        });
+
+        return;
+    }
+
+    if(
+        arma===3 &&
+        !laserDesbloqueado
+    ){
+
+        alert(
+            "🔒 Completa el nivel 3 para conseguir el Rayo Láser."
+        );
+
+        return;
+    }
+
+    if(
+        jugador.municion[arma]<=0
+    )
+        return;
+
+    jugador.municion[arma]--;
+
+    let a=armas[arma];
+
+    balas.push({
+
+        x:
+            jugador.x+
+            Math.cos(angulo)*35,
+
+        y:
+            jugador.y+
+            Math.sin(angulo)*35,
+
+        angulo:angulo,
+
+        velocidad:a.velocidad,
+        daño:a.daño,
+        tam:a.tam,
+
+        color:
+            arma===0
+            ? "#ffff00"
+            : arma===1
+            ? "#00ffff"
+            : arma===2
+            ? "#ff6600"
+            : "#ffffff"
+    });
+}
+
+
+/* =========================
+   ARMAS
+========================= */
+
+function seleccionarArma(n){
+
+    if(
+        n===3 &&
+        !laserDesbloqueado
+    ){
+
+        alert(
+            "🔒 El Rayo Láser se consigue al completar el nivel 3."
+        );
+
+        return;
+    }
+
+    arma=n;
+
+    actualizarSeleccionArma();
+}
+
+
+function actualizarSeleccionArma(){
+
+    for(let i=0;i<4;i++){
+
+        let boton=
+            document.getElementById(
+                "arma"+i
+            );
+
+        if(boton){
+
+            boton.classList.remove(
+                "seleccionado"
+            );
+        }
+    }
+
+    let actual=
+        document.getElementById(
+            "arma"+arma
+        );
+
+    if(actual)
+        actual.classList.add("seleccionado");
+}
+
+
+/* =========================
+   CÓDIGO SECRETO
+========================= */
+
+function registrarCodigo(tecla){
+
+    const secreto=[
+        "up",
+        "down",
+        "left",
+        "right",
+        "fire"
+    ];
+
+    codigo.push(tecla);
+
+    if(codigo.length>5)
+        codigo.shift();
+
+    if(
+        codigo.join(",")===
+        secreto.join(",")
+    ){
+
+        armaSecreta=true;
+        codigo=[];
+
+        alert(
+            "🔓 ¡ARMA SECRETA ACTIVADA!"
+        );
+    }
+}
+
+
+/* =========================
+   TECLADO
+========================= */
+
+document.addEventListener(
+    "keydown",
+    e=>{
+
+        if(e.key==="ArrowUp"){
+
+            if(!teclasMovimiento.up)
+                registrarCodigo("up");
+
+            teclasMovimiento.up=true;
+        }
+
+        if(e.key==="ArrowDown"){
+
+            if(!teclasMovimiento.down)
+                registrarCodigo("down");
+
+            teclasMovimiento.down=true;
+        }
+
+        if(e.key==="ArrowLeft"){
+
+            if(!teclasMovimiento.left)
+                registrarCodigo("left");
+
+            teclasMovimiento.left=true;
+        }
+
+        if(e.key==="ArrowRight"){
+
+            if(!teclasMovimiento.right)
+                registrarCodigo("right");
+
+            teclasMovimiento.right=true;
+        }
+
+        if(e.code==="Space"){
+
+            e.preventDefault();
+
+            registrarCodigo("fire");
+            disparar();
+        }
+
+        if(e.key==="1")
+            seleccionarArma(0);
+
+        if(e.key==="2")
+            seleccionarArma(1);
+
+        if(e.key==="3")
+            seleccionarArma(2);
+
+        if(e.key==="4")
+            seleccionarArma(3);
+
+        if(e.key==="5")
+            activarEscudo();
+    }
+);
+
+
+document.addEventListener(
+    "keyup",
+    e=>{
+
+        if(e.key==="ArrowUp")
+            teclasMovimiento.up=false;
+
+        if(e.key==="ArrowDown")
+            teclasMovimiento.down=false;
+
+        if(e.key==="ArrowLeft")
+            teclasMovimiento.left=false;
+
+        if(e.key==="ArrowRight")
+            teclasMovimiento.right=false;
+    }
+);
+
+
+/* =========================
+   INTERFAZ
+========================= */
+
+function dibujarInterfaz(){
+
+    ctx.fillStyle="white";
+
+    ctx.font="18px Arial";
+
+    ctx.fillText(
+        "Nivel: "+nivel,
+        20,
+        28
+    );
+
+    ctx.fillText(
+        "Arma: "+
+        armas[arma].nombre,
+        150,
+        28
+    );
+
+    ctx.fillText(
+        "🧩 "+partes,
+        400,
+        28
+    );
+
+    ctx.fillStyle="red";
+
+    ctx.fillRect(
+        20,
+        45,
+        200,
+        18
+    );
+
+    ctx.fillStyle="#00ff00";
+
+    ctx.fillRect(
+        20,
+        45,
+        200*
+        Math.max(
+            0,
+            jugador.vida/
+            jugador.maxVida
+        ),
+        18
+    );
+
+    ctx.fillStyle="white";
+
+    ctx.font="13px Arial";
+
+    ctx.fillText(
+        "Vida: "+
+        Math.max(
+            0,
+            Math.floor(jugador.vida)
+        )+
+        "/"+
+        jugador.maxVida,
+        65,
+        58
+    );
+
+    if(armaSecreta){
+
+        ctx.fillText(
+            "🔐 ARMA SECRETA ∞",
+            300,
+            60
+        );
+
+    }else{
+
+        ctx.fillText(
+            "Munición: "+
+            jugador.municion[arma]+
+            "/"+
+            armas[arma].max,
+            300,
+            60
+        );
+    }
+
+    if(escudoActivo){
+
+        ctx.fillText(
+            "🛡️ ESCUDO ACTIVO",
+            300,
+            82
+        );
+
+    }else if(!escudoDisponible){
+
+        ctx.fillText(
+            "🔄 ESCUDO RECARGANDO",
+            300,
+            82
+        );
+    }
+
+    if(nivel===5){
+
+        ctx.fillText(
+            "⚠️ JEFE: 1500 VIDA",
+            350,
+            105
+        );
+    }
+
+    if(nivel===10){
+
+        ctx.fillText(
+            "👑 JEFE FINAL: 4000 VIDA ⚡",
+            330,
+            105
+        );
+    }
+}
+
+
+/* =========================
+   BUCLE
+========================= */
+
+function juego(){
+
+    if(!jugando)
+        return;
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    actualizarMovimiento();
+
+    actualizarTemporizadorEscudo();
+
+    moverEnemigos();
+
+    moverBalas();
+
+    recogerObjetos();
+
+    dibujarObjetos();
+
+    dibujarJugador();
+
+    dibujarEnemigos();
+
+    dibujarRayos();
+
+    dibujarBalas();
+
+    dibujarInterfaz();
+
+    if(jugador.vida<=0){
+
+        morir();
+
+        return;
+    }
+
+    if(enemigos.length===0){
+
+        completarNivel();
+
+        return;
+    }
+
+    raf=
+        requestAnimationFrame(
+            juego
+        );
+}
+
+
+/* =========================
+   MORIR
+========================= */
+
+function morir(){
+
+    if(!jugando)
+        return;
+
+    jugando=false;
+
+    teclasMovimiento={
+        up:false,
+        down:false,
+        left:false,
+        right:false
+    };
+
+    setTimeout(()=>{
+
+        alert(
+            "💀 Perdiste.\n\nReiniciando el nivel..."
+        );
+
+        iniciarNivel(nivel);
+
+    },300);
+}
+
+
+/* =========================
+   COMPLETAR NIVEL
+========================= */
+
+function completarNivel(){
+
+    if(!jugando)
+        return;
+
+    jugando=false;
+
+    teclasMovimiento={
+        up:false,
+        down:false,
+        left:false,
+        right:false
+    };
+
+    if(nivel===3){
+
+        laserDesbloqueado=true;
+
+        localStorage.setItem(
+            "rfLaser",
+            "1"
+        );
+    }
+
+    let desbloqueado=
+        Number(
+            localStorage.getItem(
+                "robotFireDesbloqueado"
+            )||1
+        );
+
+    if(
+        nivel<10 &&
+        nivel+1>desbloqueado
+    ){
+
+        localStorage.setItem(
+            "robotFireDesbloqueado",
+            nivel+1
+        );
+    }
+
+    mostrarPantallaNivel();
+}
+
+
+/* =========================
+   PANTALLA NIVEL
+========================= */
+
+function mostrarPantallaNivel(){
+
+    let pantalla=
+        document.getElementById(
+            "pantallaFinal"
+        );
+
+    let titulo=
+        document.getElementById(
+            "tituloFinal"
+        );
+
+    let texto=
+        document.getElementById(
+            "textoFinal"
+        );
+
+    let boton=
+        document.getElementById(
+            "btnProximo"
+        );
+
+    if(nivel===10){
+
+        titulo.textContent=
+            "🏆 ¡VICTORIA TOTAL!";
+
+        texto.textContent=
+            "¡Derrotaste al JEFE FINAL! 🤖⚡";
+
+        boton.style.display="none";
+
+    }else{
+
+        titulo.textContent=
+            "🏆 ¡NIVEL "+nivel+" COMPLETADO!";
+
+        texto.textContent=
+            "¡Has desbloqueado el Nivel "+
+            (nivel+1)+"!";
+
+        boton.style.display="inline-block";
+
+        boton.textContent=
+            "▶️ PRÓXIMO NIVEL "+(nivel+1);
+    }
+
+    pantalla.style.display="flex";
+}
+
+
+/* =========================
+   SIGUIENTE NIVEL
+========================= */
+
+function siguienteNivel(){
+
+    if(nivel>=10){
+
+        volverMenu();
+
+        return;
+    }
+
+    nivelSeleccionado=
+        nivel+1;
+
+    document.getElementById(
+        "pantallaFinal"
+    ).style.display="none";
+
+    iniciarNivel(
+        nivel+1
+    );
+}
+
+
+/* =========================
+   MENÚ
+========================= */
+
+function volverMenu(){
+
+    jugando=false;
+
+    cancelAnimationFrame(raf);
+
+    jugador=null;
+
+    enemigos=[];
+    balas=[];
+    objetos=[];
+    rayos=[];
+
+    escudoActivo=false;
+    escudoDisponible=true;
+    tiempoEscudo=0;
+    tiempoRecarga=0;
+
+    teclasMovimiento={
+        up:false,
+        down:false,
+        left:false,
+        right:false
+    };
+
+    document.getElementById(
+        "pantallaFinal"
+    ).style.display="none";
+
+    document.getElementById(
+        "juego"
+    ).style.display="none";
+
+    document.getElementById(
+        "menu"
+    ).style.display="block";
+
+    cargarNiveles();
+}
+
+
+/* =========================
+   INICIO
+========================= */
+
+actualizarArmas();
+
+cargarNiveles();
+
+</script>
+
+</body>
+</html>
